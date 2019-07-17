@@ -41,4 +41,15 @@ df.head()
 
 # let's drop Loan ID and Customer ID as this won't be used for modelling
 
+df = df.drop('Loan ID', axis =1)
+df = df.drop('Customer ID', axis=1)
+
+df.head()
+
+df.isnull().any(axis=0)
+
+df.isnull().sum()
+
+df.tail()
+
 
