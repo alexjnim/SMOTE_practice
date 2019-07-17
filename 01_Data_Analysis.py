@@ -108,6 +108,38 @@ plot_bar_graphs(df, 'Purpose', 'Loan Status')
 
 # makes sense that people taking about business loans are making a risk, particularly small businesses 
 
+# # Number of Credit Problems 
+
+df['Number of Credit Problems'].value_counts()
+
+plot_bar_graphs(df, 'Number of Credit Problems', 'Loan Status')
+
+# makes sense, when you start to have more than 5 credit problems, your likelihood of defaulting is a lot higher
+
+# # Years in current job
+
+df['Years in current job'].value_counts()
+
+plot_bar_graphs(df, 'Years in current job', 'Loan Status')
+
+# looks like the number of years that you've been in your current job does not change how likely you are to default
+
+# # Bankruptcies
+
+df['Bankruptcies'].value_counts()
+
+plot_bar_graphs(df, 'Bankruptcies', 'Loan Status')
+
+# # tax liens
+
+# little influence 
+
+df['Tax Liens'].value_counts()
+
+plot_bar_graphs(df, 'Tax Liens', 'Loan Status')
+
+# as you start to get more than 3 tax liens, you're more likely to defaul it seems
+
 # # Histogram function
 
 # +
@@ -128,9 +160,9 @@ def plot_histograms(df, x_attribute, n_bins, x_max, y_attribute):
     df[x_attribute].hist(bins= n_bins, color= crimson)
     
     #this plots the mean and median 
-    plt.plot([df[x_attribute].mean(), df[x_attribute].mean()], [0, 60000],
+    plt.plot([df[x_attribute].mean(), df[x_attribute].mean()], [0, 10000],
         color='black', linestyle='-', linewidth=2, label='mean')
-    plt.plot([df[x_attribute].median(), df[x_attribute].median()], [0, 60000],
+    plt.plot([df[x_attribute].median(), df[x_attribute].median()], [0, 10000],
         color='black', linestyle='--', linewidth=2, label='median')
     
     plt.xlim(xmin=0, xmax = x_max)
@@ -140,25 +172,25 @@ def plot_histograms(df, x_attribute, n_bins, x_max, y_attribute):
     plt.legend(loc='best')
     plt.show()
 
-    df[df[ y_attribute]==0][x_attribute].hist(bins=n_bins, color = crimson, label='No default')
+    df[df[ y_attribute]=='Fully Paid'][x_attribute].hist(bins=n_bins, color = crimson, label='No default')
 
-    print ("Y Mean: {:0.2f}".format(df[df[y_attribute]==0][x_attribute].mean()))
-    print ("Y Median: {:0.2f}".format(df[df[ y_attribute]==0][x_attribute].median()))
+    print ("Fully Paid Mean: {:0.2f}".format(df[df[y_attribute]=='Fully Paid'][x_attribute].mean()))
+    print ("Fully Paid Median: {:0.2f}".format(df[df[ y_attribute]=='Fully Paid'][x_attribute].median()))
     
-    plt.plot([df[df[ y_attribute]==0][x_attribute].mean(), df[df[ y_attribute]==0][x_attribute].mean()], 
-            [0, 60000], color='r', linestyle='-', linewidth=2, label='Y mean') 
-    plt.plot([df[df[ y_attribute]==1][x_attribute].mean(), df[df[ y_attribute]==1][x_attribute].mean()], 
-            [0, 60000], color='b', linestyle='-', linewidth=2, label='N mean')
+    plt.plot([df[df[ y_attribute]=='Fully Paid'][x_attribute].mean(), df[df[ y_attribute]=='Fully Paid'][x_attribute].mean()], 
+            [0, 5000], color='r', linestyle='-', linewidth=2, label='Y mean') 
+    plt.plot([df[df[ y_attribute]=='Charged Off'][x_attribute].mean(), df[df[ y_attribute]=='Charged Off'][x_attribute].mean()], 
+            [0, 5000], color='b', linestyle='-', linewidth=2, label='N mean')
  
-    df[df[ y_attribute]==1][x_attribute].hist(bins=n_bins, color = lime_green, label='Default')
+    df[df[ y_attribute]=='Charged Off'][x_attribute].hist(bins=n_bins, color = lime_green, label='Default')
     
-    print ("N Mean: {:0.2f}".format(df[df[ y_attribute]==1][x_attribute].mean()))
-    print ("N Median: {:0.2f}".format(df[df[ y_attribute]==1][x_attribute].median()))
+    print ("Charged Off Mean: {:0.2f}".format(df[df[ y_attribute]=='Charged Off'][x_attribute].mean()))
+    print ("Charged Off Median: {:0.2f}".format(df[df[ y_attribute]=='Charged Off'][x_attribute].median()))
     
-    plt.plot([df[df[ y_attribute]==0][x_attribute].median(), df[df[ y_attribute]==0][x_attribute].median()], 
-            [0, 60000], color='r', linestyle='--', linewidth=2, label='Y median') 
-    plt.plot([df[df[ y_attribute]==1][x_attribute].median(), df[df[ y_attribute]==1][x_attribute].median()], 
-            [0, 60000], color='b', linestyle='--', linewidth=2, label='N median')
+    plt.plot([df[df[ y_attribute]=='Fully Paid'][x_attribute].median(), df[df[ y_attribute]=='Fully Paid'][x_attribute].median()], 
+            [0, 5000], color='r', linestyle='--', linewidth=2, label='Y median') 
+    plt.plot([df[df[ y_attribute]=='Charged Off'][x_attribute].median(), df[df[ y_attribute]=='Charged Off'][x_attribute].median()], 
+            [0, 5000], color='b', linestyle='--', linewidth=2, label='N median')
     
     plt.xlim(xmin=0, xmax = x_max)
     
@@ -172,5 +204,41 @@ def plot_histograms(df, x_attribute, n_bins, x_max, y_attribute):
 
 
 # -
+
+df.head()
+
+# # Monthly Debt
+
+plot_histograms(df, 'Monthly Debt', 150, 80000, 'Loan Status')
+
+# the means and medians are roughly around the same region, but those for Charged Off slightly higher. It looks like your monthly debt does not affect this too much.
+
+# # Annual Income 
+
+df['Annual Income'].max()
+
+plot_histograms(df, 'Annual Income', 1000, 7000000, 'Loan Status')
+
+# looks like people with a smaller annual income are more likely to default according to the mean and medians. this makes sense
+
+# # Number of Open Accounts
+
+plot_histograms(df, 'Number of Open Accounts', 51, 100, 'Loan Status')
+
+# # Current Loan Amount
+
+plot_histograms(df, 'Current Loan Amount', 10000, 1000000, 'Loan Status')
+
+# # Current Credit Balance
+
+plot_histograms(df, 'Current Credit Balance', 2000, 1000000, 'Loan Status')
+
+# # Maximum Open Credit
+
+plot_histograms(df, 'Maximum Open Credit', 4000, 1000000, 'Loan Status')
+
+# # Credit Score
+
+plot_histograms(df, 'Credit Score', 500, 2000, 'Loan Status')
 
 
