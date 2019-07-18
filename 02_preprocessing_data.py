@@ -402,6 +402,40 @@ new_df['Loan Status'] = (new_df['Loan Status'] == 'Fully Paid').astype(int)
 X_pretest['Loan Status'] = (X_pretest['Loan Status'] == 'Fully Paid').astype(int)
 # -
 
+# # Let's have a quick look at the correlation matrix for this
+#
+
+# +
+import seaborn as sns
+
+def corr_matrix(df, attribute_list, key_attribute):
+    new_df = pd.DataFrame()
+    for i in attribute_list:
+        new_df[i] = df[i]
+            
+    matrix = new_df.corr()
+    f, ax = plt.subplots(figsize=(9, 6))
+    sns.heatmap(matrix, vmax=.8, square=True, cmap="YlGnBu")
+    
+    print(matrix[key_attribute].sort_values(ascending=False))
+    
+    return 
+
+
+# -
+
+list_attribs = ['Loan Status', "Current Loan Amount", "Annual Income", "Monthly Debt",
+                 'Years of Credit History', 'Months since last delinquent',
+                 'Number of Open Accounts', 'Number of Credit Problems',
+                 'Current Credit Balance', 'Maximum Open Credit',
+                 'Bankruptcies', 'Tax Liens']
+
+corr_matrix(new_df, list_attribs, 'Loan Status')
+
+
+
+
+
 # # Let's export this data before we put it through the pipeline
 
 # +
@@ -480,6 +514,10 @@ X_train_processed.shape
 
 
 X_pretest_processed.shape
+
+
+X_train_processed.to_csv(r'X_train_processed.csv')
+X_pretest_processed.to_csv(r'X_pretest_processed.csv')
 
 
 
