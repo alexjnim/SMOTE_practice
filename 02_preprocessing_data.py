@@ -328,6 +328,20 @@ new_df['Purpose'].value_counts()
 
 plot_bar_graphs(new_df, 'Purpose', 'Loan Status')
 
+# need to do the same thing here with X_pretest
+
+X_pretest['Purpose'].value_counts()
+
+X_pretest['Purpose'].replace({ 'other':'Other', 'renewable_energy': 'Other',
+                        'Buy a Car':'major_purchase',
+                        'moving':'Home Improvements',
+                        'Take a trip': 'vacation',
+                        'Educational Expenses': 'Other',
+                        'vacation':'Take a Trip',
+                        'wedding': 'major_purchase'},inplace=True)
+
+X_pretest['Purpose'].value_counts()
+
 # # Number of Credit Problems
 
 plot_bar_graphs(new_df, 'Number of Credit Problems', 'Loan Status')
@@ -361,6 +375,81 @@ plot_bar_graphs(new_df, 'Tax Liens', 'Loan Status')
 
 # this looks ok to me
 
+# # Make extra features/columns? ... let's try this another time
+
+new_df.head()
+
+# # Let's export this data before we put it through the pipeline
+
+# +
+y_train = new_df['Loan Status']
+X_train = new_df.drop(['Loan Status'], axis=1)
+
+y_pretest = X_pretest['Loan Status']
+X_pretest = X_pretest.drop(['Loan Status'], axis=1)
+# -
+
+X_train.shape
+
+X_pretest.shape
+
+X_train.to_csv(r'X_train.csv')
+X_pretest.to_csv(r'X_pretest.csv')
+y_train.to_csv(r'y_train.csv')
+y_pretest.to_csv(r'y_pretest.csv')
+
 # # Now let's use pipelines to scale the numerical data and one hot encode the categorical data
+
+# +
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import OneHotEncoder
+
+class selector(BaseEstimator, TransformerMixin):
+    def __init__(self, attribute_names):
+        self.attribute_names = attribute_names
+    def fit(self, X, y=None):
+        return self
+    def transform(self,X):
+        return X[self.attribute_names].values
+      
+num_attributes = ["LoanAmount", "Loan_Amount_Term",
+                  'ApplicantIncome', 'CoapplicantIncome']
+
+num_pipeline = Pipeline([
+            ('selector', selector(num_attributes)),
+            ('imputer', SimpleImputer(strategy="median")),
+            ('std_scaler', StandardScaler()),
+                    ])
+
+cat_attributes = ['Gender', 'Married', 'Education', 'Self_Employed', 
+                  'Property_Area', 'Dependents', 'Credit_History']
+
+cat_pipeline = Pipeline([
+                ('selector', selector(cat_attributes)),
+                ('imputer', SimpleImputer(strategy="most_frequent")),
+                ('cat_encoder', OneHotEncoder(sparse=False)),
+])
+
+# +
+from sklearn.pipeline import FeatureUnion
+
+full_pipeline = FeatureUnion(transformer_list=[
+        ("num_pipeline", num_pipeline),
+        ("cat_pipeline", cat_pipeline),
+    ])
+
+# +
+X_train_processed = full_pipeline.fit_transform(X_train)
+X_train_processed = pd.DataFrame(X_train_processed)
+
+X_pretest_processed = full_pipeline.fit_transform(X_train)
+X_prestest_processed = pd.DataFrame(X_pretest)
+
+
+
+# -
 
 
