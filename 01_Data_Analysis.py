@@ -241,4 +241,8 @@ plot_histograms(df, 'Maximum Open Credit', 4000, 1000000, 'Loan Status')
 
 plot_histograms(df, 'Credit Score', 500, 2000, 'Loan Status')
 
+# # Months since last delinquent
+
+plot_histograms(df, 'Months since last delinquent', 50, 50, 'Loan Status')
+
 
