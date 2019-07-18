@@ -393,13 +393,22 @@ X_pretest['Home Ownership'].replace({ 'HaveMortgage':'Home Mortgage'},inplace=Tr
 
 new_df.head()
 
+# # Change the y variables into integers
+
+# +
+# change the varialbes Fully Paid and Charged Off into 0 and 1
+
+new_df['Loan Status'] = (new_df['Loan Status'] == 'Fully Paid').astype(int)
+X_pretest['Loan Status'] = (X_pretest['Loan Status'] == 'Fully Paid').astype(int)
+# -
+
 # # Let's export this data before we put it through the pipeline
 
 # +
 y_train = new_df['Loan Status']
-X_train = new_df.drop(['Loan Status'], axis=1)
-
 y_pretest = X_pretest['Loan Status']
+
+X_train = new_df.drop(['Loan Status'], axis=1)
 X_pretest = X_pretest.drop(['Loan Status'], axis=1)
 # -
 
@@ -429,7 +438,11 @@ class selector(BaseEstimator, TransformerMixin):
     def transform(self,X):
         return X[self.attribute_names].values
       
-num_attributes = ["']
+num_attributes = ["Current Loan Amount", "Annual Income", "Monthly Debt",
+                 'Years of Credit History', 'Months since last delinquent',
+                 'Number of Open Accounts', 'Number of Credit Problems',
+                 'Current Credit Balance', 'Maximum Open Credit',
+                 'Bankruptcies', 'Tax Liens']
 
 num_pipeline = Pipeline([
             ('selector', selector(num_attributes)),
@@ -437,7 +450,7 @@ num_pipeline = Pipeline([
             ('std_scaler', StandardScaler()),
                     ])
 
-cat_attributes = ['']
+cat_attributes = ['Term', 'Years in current job', 'Home Ownership', 'Purpose']
 
 cat_pipeline = Pipeline([
                 ('selector', selector(cat_attributes)),
@@ -457,13 +470,16 @@ full_pipeline = FeatureUnion(transformer_list=[
 X_train_processed = full_pipeline.fit_transform(X_train)
 X_train_processed = pd.DataFrame(X_train_processed)
 
-X_pretest_processed = full_pipeline.fit_transform(X_train)
-X_prestest_processed = pd.DataFrame(X_pretest)
+X_pretest_processed = full_pipeline.fit_transform(X_pretest)
+X_pretest_processed = pd.DataFrame(X_pretest_processed)
 
 
 
 # -
+X_train_processed.shape
 
+
+X_pretest_processed.shape
 
 
 
