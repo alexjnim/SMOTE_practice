@@ -314,7 +314,34 @@ def plot_bar_graphs(df, attribute, y):
 
 plot_bar_graphs(new_df, 'Purpose', 'Loan Status')
 
+# other and Other are the same, let's correct this. Let's classify moving and Home Improvements as the same thing, etc.
+
+new_df['Purpose'].replace({ 'other':'Other', 'renewable_energy': 'Other',
+                        'Buy a Car':'major_purchase',
+                        'moving':'Home Improvements',
+                        'Take a trip': 'vacation',
+                        'Educational Expenses': 'Other',
+                        'vacation':'Take a Trip',
+                        'wedding': 'major_purchase'},inplace=True)
+
+new_df['Purpose'].value_counts()   
+
+plot_bar_graphs(new_df, 'Purpose', 'Loan Status')
+
 # # Number of Credit Problems
+
+plot_bar_graphs(new_df, 'Number of Credit Problems', 'Loan Status')
+
+# this doesn't look right, if you have 7, 8, 10, 11 or 15 credit problems, you will be predicted to have fully paid everything... maybe it's worth just removing these
+
+# +
+new_df = new_df[new_df['Number of Credit Problems'] != 8.0]
+new_df = new_df[new_df['Number of Credit Problems'] != 10.0]
+new_df = new_df[new_df['Number of Credit Problems'] != 11.0]
+new_df = new_df[new_df['Number of Credit Problems'] != 15.0]
+
+new_df['Number of Credit Problems'].value_counts()
+# -
 
 plot_bar_graphs(new_df, 'Number of Credit Problems', 'Loan Status')
 
@@ -322,10 +349,18 @@ plot_bar_graphs(new_df, 'Number of Credit Problems', 'Loan Status')
 
 plot_bar_graphs(new_df, 'Bankruptcies', 'Loan Status')
 
+# let's remove the row that has Bankruptcies = 6.0 
+
+new_df = new_df[new_df['Bankruptcies'] != 6.0]
+
+plot_bar_graphs(new_df, 'Bankruptcies', 'Loan Status')
+
 # # Tax Liens
 
 plot_bar_graphs(new_df, 'Tax Liens', 'Loan Status')
 
+# this looks ok to me
 
+# # Now let's use pipelines to scale the numerical data and one hot encode the categorical data
 
 
