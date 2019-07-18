@@ -181,8 +181,8 @@ def simple_box_plot(df, x_attrib, y_attrib):
     axes.set_title(x_attrib)
 
     
-    for i in X_train[y_attrib].unique():
-        print("Median for '{}'': {}".format(i, df[x_attrib][df[y_attrib] == i].median()))
+    for i in df[y_attrib].unique():
+        print("Median for '{}': {}".format(i, df[x_attrib][df[y_attrib] == i].median()))
 
 plt.show()
     
@@ -190,7 +190,7 @@ plt.show()
 
 def remove_outliers(df, x_attrib, y_attrib):
 
-    for i in X_train[y_attrib].unique():
+    for i in df[y_attrib].unique():
         
         m, n = df.shape
         print('Number of rows: {}'.format(m))
@@ -224,6 +224,8 @@ def remove_outliers(df, x_attrib, y_attrib):
     print('----' * 27)
     return new_df
 
+
+df.head()
 
 # # Monthly Debt
 
@@ -375,6 +377,18 @@ plot_bar_graphs(new_df, 'Tax Liens', 'Loan Status')
 
 # this looks ok to me
 
+# # Home Ownership
+
+plot_bar_graphs(new_df, 'Home Ownership', 'Loan Status')
+
+# +
+new_df['Home Ownership'].replace({ 'HaveMortgage':'Home Mortgage'},inplace=True)
+
+X_pretest['Home Ownership'].replace({ 'HaveMortgage':'Home Mortgage'},inplace=True)
+
+
+# -
+
 # # Make extra features/columns? ... let's try this another time
 
 new_df.head()
@@ -415,8 +429,7 @@ class selector(BaseEstimator, TransformerMixin):
     def transform(self,X):
         return X[self.attribute_names].values
       
-num_attributes = ["LoanAmount", "Loan_Amount_Term",
-                  'ApplicantIncome', 'CoapplicantIncome']
+num_attributes = ["']
 
 num_pipeline = Pipeline([
             ('selector', selector(num_attributes)),
@@ -424,8 +437,7 @@ num_pipeline = Pipeline([
             ('std_scaler', StandardScaler()),
                     ])
 
-cat_attributes = ['Gender', 'Married', 'Education', 'Self_Employed', 
-                  'Property_Area', 'Dependents', 'Credit_History']
+cat_attributes = ['']
 
 cat_pipeline = Pipeline([
                 ('selector', selector(cat_attributes)),
@@ -451,5 +463,7 @@ X_prestest_processed = pd.DataFrame(X_pretest)
 
 
 # -
+
+
 
 
