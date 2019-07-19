@@ -54,16 +54,6 @@ X_pretest.shape
 X_train.shape
 
 # +
-from sklearn.metrics import mean_squared_error
-
-def rmse_value(X, y, model):
-    y_pred = model.predict(X)
-    mse = mean_squared_error(y, y_pred)
-    rmse = np.sqrt(mse)
-    return rmse
-
-
-# +
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
@@ -73,11 +63,14 @@ forest_clf.fit(X_train, y_train)
 y_pretest_pred = forest_clf.predict(X_pretest)
 
 score = accuracy_score(y_pretest_pred, y_pretest)
-rmse = rmse_value(X_pretest, y_pretest, forest_clf)
-print('accuracy: {}'.format(score))
 
-print('rmse: {}'.format(rmse))
+print('accuracy: {}'.format(score))
 # -
+
+# 72% percent accuracy is pretty good! but remember, if the model predicts that all of the entries pay off their loans, we would get a 78.77% accuracy.
+
+print('Pays off loans:', round(y_train.value_counts()[1]/len(y_train) * 100,2), '% of the dataset')
+print('Does not pay off loans:', round(y_train.value_counts()[0]/len(y_train) * 100,2), '% of the dataset')
 
 # # let's do this with cross validation
 
@@ -95,12 +88,12 @@ def display_scores(scores):
 # %%capture
 
 forest_scores = cross_val_score(forest_clf, X_train, y_train,
-                                scoring="neg_mean_squared_error", cv=10)
-forest_rmse_scores = np.sqrt(-forest_scores)
+                                scoring="accuracy", cv=10)
+
 
 # -
 
-display_scores(forest_rmse_scores)
+display_scores(forest_scores)
 
 # # damn, the RMSE error is pretty bad
 #
