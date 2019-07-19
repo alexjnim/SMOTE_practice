@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -508,7 +509,14 @@ full_pipeline = FeatureUnion(transformer_list=[
 X_train_processed = full_pipeline.fit_transform(X_train)
 X_train_processed = pd.DataFrame(X_train_processed)
 
-X_pretest_processed = full_pipeline.fit_transform(X_pretest)
+
+# note that we are using transform() on X_pretest 
+#we standardize our training dataset, we need to keep the parameters (mean and standard deviation for each feature). 
+#Then, we use these parameters to transform our test data and any future data later on
+#fit() just calculates the parameters (e.g. 𝜇 and 𝜎 in case of StandardScaler) 
+#and saves them as an internal objects state. 
+#Afterwards, you can call its transform() method to apply the transformation to a particular set of examples.
+X_pretest_processed = full_pipeline.transform(X_pretest)
 X_pretest_processed = pd.DataFrame(X_pretest_processed)
 
 
@@ -522,6 +530,13 @@ X_pretest_processed.shape
 
 X_train_processed.to_csv(r'X_train_processed.csv')
 X_pretest_processed.to_csv(r'X_pretest_processed.csv')
+
+
+
+
+
+
+
 
 
 
