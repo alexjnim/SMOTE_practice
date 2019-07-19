@@ -74,7 +74,7 @@ print('accuracy: {}'.format(score))
 print('Pays off loans:', round(y_train.value_counts()[0]/len(y_train) * 100,2), '% of the dataset')
 print('Does not pay off loans:', round(y_train.value_counts()[1]/len(y_train) * 100,2), '% of the dataset')
 
-# # let's do this with cross validation to check the actual accuracy as it can test this against the validation set
+# # let's do this with Cross Validation to check the actual accuracy as it can test this against the validation set
 
 # +
 from sklearn.model_selection import cross_val_score
@@ -174,6 +174,112 @@ print('the recall score is : ', recall_score(y_pretest, y_pretest_pred))
 print('the f1 score is : ', f1_score(y_pretest, y_pretest_pred))
 # -
 
-# # these scores are terrible! 
+# # these scores are terrible! - let's try this with SMOTE
+
+# +
+from sklearn.model_selection import KFold
+from imblearn.over_sampling import SMOTE
+
+smt = SMOTE()
+
+def KFold_SMOTE_model_scores(X_df, y, model):
+    
+    scores = []
+    cv = KFold(n_splits=5, random_state=42, shuffle=True)
+    
+    # need to reset the indices as the 
+    X_df = X_df.reset_index(drop=True)
+    y = y.reset_index(drop=True)
+    
+    #this will shuffle through 5 different training and validation data splits 
+    for train_index, val_index in cv.split(X_df):
+        
+        X_train = X_df.loc[train_index]
+        y_train = y.loc[train_index]
+        
+        X_val = X_df.loc[val_index]
+        y_val = y.loc[val_index]   
+        
+        print('Before OverSampling, the shape of X_train: {}'.format(X_train.shape))
+        print('Before OverSampling, the shape of y_train: {} \n'.format(y_train.shape))
+
+        print("Before OverSampling, counts of label 'Y': {}".format(sum(y_train==1)))
+        print("Before OverSampling, counts of label 'N': {} \n".format(sum(y_train==0)))
+        
+        
+        # this will create minority class data points such that y_train has 50% == 1 and 50% == 0
+        X_train_SMOTE, y_train_SMOTE = smt.fit_sample(X_train, y_train)
+        
+        print('After OverSampling, the shape of X_train: {}'.format(X_train_SMOTE.shape))
+        print('After OverSampling, the shape of y_train: {} \n'.format(y_train_SMOTE.shape))
+
+        print("After OverSampling, counts of label 'Y': {}".format(sum(y_train_SMOTE==1)))
+        print("After OverSampling, counts of label 'N': {} \n".format(sum(y_train_SMOTE==0)))
+        
+        print("---" * 7)
+        print("\n")
+        
+        model.fit(X_train_SMOTE, y_train_SMOTE)
+        
+        #find the accuracy score of the validation set
+        y_val_pred = model.predict(X_val)
+        scores.append(accuracy_score(y_val, y_val_pred))
+        
+        #find the best model based on the accuracy score
+        if accuracy_score(y_val, y_val_pred) == max(scores):
+            best_model = model
+    
+    return scores, best_model
+
+# +
+from sklearn.ensemble import RandomForestClassifier
+
+forest_clf = RandomForestClassifier(n_estimators=30, random_state=42)
+
+scores, best_model = KFold_SMOTE_model_scores(X_train, y_train, forest_clf)
+# -
+
+scores = np.array(scores)
+display_scores(scores)
+
+best_model
+
+# +
+from sklearn.model_selection import cross_val_predict
+from sklearn.metrics import confusion_matrix
+
+#y_pretest_pred = cross_val_predict(best_model, X_pretest, y_pretest, cv=3)
+
+y_pretest_pred = best_model.predict(X_pretest)
+
+y_pretest_pred = y_pretest_pred.round()
+
+confusion_mat = confusion_matrix(y_pretest, y_pretest_pred)
+
+sns.set_style("white")
+plt.matshow(confusion_mat, cmap=plt.cm.gray)
+plt.show()
+
+# +
+row_sums = confusion_mat.sum(axis=1, keepdims=True)
+normalised_confusion_mat = confusion_mat/row_sums
+
+plt.matshow(normalised_confusion_mat, cmap=plt.cm.gray)
+print(confusion_mat, "\n")
+print(normalised_confusion_mat)
+# -
+
+# # much better than before, but still not that great!
+
+from sklearn.metrics import accuracy_score
+print(accuracy_score(y_pretest_pred, y_pretest))
+
+# +
+from sklearn.metrics import precision_score, recall_score, f1_score
+
+print('the precision score is : ', precision_score(y_pretest_pred, y_pretest))
+print('the recall score is : ', recall_score(y_pretest_pred, y_pretest))
+print('the f1 score is : ', f1_score(y_pretest_pred, y_pretest))
+# -
 
 
