@@ -62,14 +62,15 @@ from sklearn.metrics import accuracy_score
 forest_clf = RandomForestClassifier(n_estimators=10, random_state=42)
 forest_clf.fit(X_train, y_train)
 
-y_pretest_pred = forest_clf.predict(X_pretest)
+y_train_pred = forest_clf.predict(X_train)
+#y_pretest_pred = forest_clf.predict(X_pretest)
 
-score = accuracy_score(y_pretest_pred, y_pretest)
+score = accuracy_score(y_train, y_train_pred)
 
 print('accuracy: {}'.format(score))
 # -
 
-# 79% percent accuracy is pretty good! but remember, if the model predicts that all of the entries pay off their loans, we would get a 78.77% accuracy.
+# 97% ?? surely not, it must have overfitted. let's check with cross val
 
 print('Pays off loans:', round(y_train.value_counts()[0]/len(y_train) * 100,2), '% of the dataset')
 print('Does not pay off loans:', round(y_train.value_counts()[1]/len(y_train) * 100,2), '% of the dataset')
@@ -93,12 +94,54 @@ forest_scores = cross_val_score(forest_clf, X_train, y_train,
                                 scoring="accuracy", cv=10)
 
 
+
+
 # -
 
 display_scores(forest_scores)
 
-# # 78%? i suspect that it has simply predicted everything to be 0 = Fully Paid
-#
+# # 78%? This is more like it, but I suspect that it has simply predicted everything to be 0 = Fully Paid
+
+# +
+from sklearn.model_selection import cross_val_predict
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score, recall_score, f1_score
+
+def confusion_matrices(y, y_pred):
+    y_pred = y_pred.round()
+        
+    confusion_mat = confusion_matrix(y, y_pred)
+
+    sns.set_style("white")
+    plt.matshow(confusion_mat, cmap=plt.cm.gray)
+    plt.show()
+
+    row_sums = confusion_mat.sum(axis=1, keepdims=True)
+    normalised_confusion_mat = confusion_mat/row_sums
+    
+    print(confusion_mat, "\n")
+    print(normalised_confusion_mat)
+    
+    plt.matshow(normalised_confusion_mat, cmap=plt.cm.gray)
+    plt.show()
+
+    print('the precision score is : ', precision_score(y, y_pred))
+    print('the recall score is : ', recall_score(y, y_pred))
+    print('the f1 score is : ', f1_score(y, y_pred))
+    
+    return
+
+
+# +
+from sklearn.model_selection import cross_val_predict
+
+y_train_pred = cross_val_predict(forest_clf, X_train, y_train, cv=10)
+# -
+
+confusion_matrices(y_train, y_train_pred)
+
+# # exactly as I suspected! 
+
 # # let's try GridSearch to find optimal setting for random forest, maybe that'll help
 
 # +
@@ -137,67 +180,24 @@ X_train.columns
 
 # # let's use confusion matrix on training set to see what these accuracy scores are coming from
 
-# +
-from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import confusion_matrix
-
 y_train_pred = best_model.predict(X_train)
 
-y_train_pred = y_train_pred.round()
-
-confusion_mat = confusion_matrix(y_train, y_train_pred)
-
-sns.set_style("white")
-plt.matshow(confusion_mat, cmap=plt.cm.gray)
-plt.show()
-
-# +
-row_sums = confusion_mat.sum(axis=1, keepdims=True)
-normalised_confusion_mat = confusion_mat/row_sums
-
-plt.matshow(normalised_confusion_mat, cmap=plt.cm.gray)
-print(confusion_mat, "\n")
-print(normalised_confusion_mat)
-# -
+confusion_matrices(y_train, y_train_pred)
 
 # # let's use confusion matrix on pretest set to evaluate the error properly 
 
 # +
-from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import confusion_matrix
-
+#y_pretest_pred = best_model.predict(X_pretest)
 y_pretest_pred = cross_val_predict(best_model, X_pretest, y_pretest, cv=3)
 
-y_pretest_pred = y_pretest_pred.round()
-
-confusion_mat = confusion_matrix(y_pretest, y_pretest_pred)
-
-sns.set_style("white")
-plt.matshow(confusion_mat, cmap=plt.cm.gray)
-plt.show()
-
-# +
-row_sums = confusion_mat.sum(axis=1, keepdims=True)
-normalised_confusion_mat = confusion_mat/row_sums
-
-plt.matshow(normalised_confusion_mat, cmap=plt.cm.gray)
-print(confusion_mat, "\n")
-print(normalised_confusion_mat)
+confusion_matrices(y_pretest, y_pretest_pred)
 # -
 
 # # basically predicted most Loan Status to be 0 (Fully Paid). This is terrible 
 
 from sklearn.metrics import accuracy_score
-print(accuracy_score(y_pretest_pred, y_pretest))
+print(accuracy_score(y_pretest, y_pretest_pred))
 
-
-# +
-from sklearn.metrics import precision_score, recall_score, f1_score
-
-print('the precision score is : ', precision_score(y_pretest, y_pretest_pred))
-print('the recall score is : ', recall_score(y_pretest, y_pretest_pred))
-print('the f1 score is : ', f1_score(y_pretest, y_pretest_pred))
-# -
 
 # # these scores are terrible! - let's try this with SMOTE
 
@@ -272,70 +272,22 @@ display_scores(scores)
 # # let's check this quickly on training data -> and then look at this for test data
 
 # +
-from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import confusion_matrix
-
-#y_pretest_pred = cross_val_predict(best_model, X_pretest, y_pretest, cv=3)
-
 y_train_pred = best_model.predict(X_train)
 
-y_train_pred = y_train_pred.round()
-
-confusion_mat = confusion_matrix(y_train, y_train_pred)
-
-sns.set_style("white")
-plt.matshow(confusion_mat, cmap=plt.cm.gray)
-plt.show()
-
-# +
-row_sums = confusion_mat.sum(axis=1, keepdims=True)
-normalised_confusion_mat = confusion_mat/row_sums
-
-plt.matshow(normalised_confusion_mat, cmap=plt.cm.gray)
-print(confusion_mat, "\n")
-print(normalised_confusion_mat)
+confusion_matrices(y_train, y_train_pred)
 # -
 
 # # it does really well on training data! let's hope it hasn't simply overfitted. Let's look at pretest set 
 
 # +
-from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import confusion_matrix
-
-#y_pretest_pred = cross_val_predict(best_model, X_pretest, y_pretest, cv=3)
-
 y_pretest_pred = best_model.predict(X_pretest)
 
-y_pretest_pred = y_pretest_pred.round()
-
-confusion_mat = confusion_matrix(y_pretest, y_pretest_pred)
-
-sns.set_style("white")
-plt.matshow(confusion_mat, cmap=plt.cm.gray)
-plt.show()
-
-# +
-row_sums = confusion_mat.sum(axis=1, keepdims=True)
-normalised_confusion_mat = confusion_mat/row_sums
-
-plt.matshow(normalised_confusion_mat, cmap=plt.cm.gray)
-print(confusion_mat, "\n")
-print(normalised_confusion_mat)
+confusion_matrices(y_pretest, y_pretest_pred)
 # -
 
-# # better with SMOTE, but still not that great! it seems to have overfitted quite a lot
+# # better with SMOTE, but still not that great! it's just predicting that y = 0 (fully paid) for everything
 
 from sklearn.metrics import accuracy_score
-print(accuracy_score(y_pretest_pred, y_pretest))
-
-# +
-from sklearn.metrics import precision_score, recall_score, f1_score
-
-print('the precision score is : ', precision_score(y_pretest_pred, y_pretest))
-print('the recall score is : ', recall_score(y_pretest_pred, y_pretest))
-print('the f1 score is : ', f1_score(y_pretest_pred, y_pretest))
-# -
-
-X_pretest.shape
+print(accuracy_score(y_pretest, y_pretest_pred))
 
 
