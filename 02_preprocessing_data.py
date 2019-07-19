@@ -393,14 +393,16 @@ X_pretest['Home Ownership'].replace({ 'HaveMortgage':'Home Mortgage'},inplace=Tr
 
 new_df.head()
 
-# # Change the y variables into integers
+# # Change the y variables into integers - here I've made Charged Off = 1 and Fully Paid = 0
 
 # +
 # change the varialbes Fully Paid and Charged Off into 0 and 1
 
-new_df['Loan Status'] = (new_df['Loan Status'] == 'Fully Paid').astype(int)
-X_pretest['Loan Status'] = (X_pretest['Loan Status'] == 'Fully Paid').astype(int)
+new_df['Loan Status'] = (new_df['Loan Status'] == 'Charged Off').astype(int)
+X_pretest['Loan Status'] = (X_pretest['Loan Status'] == 'Charged Off').astype(int)
 # -
+
+new_df['Loan Status'].value_counts()
 
 # # Let's have a quick look at the correlation matrix for this
 #
@@ -445,6 +447,8 @@ y_pretest = X_pretest['Loan Status']
 X_train = new_df.drop(['Loan Status'], axis=1)
 X_pretest = X_pretest.drop(['Loan Status'], axis=1)
 # -
+
+y_train.value_counts()
 
 X_train.shape
 
