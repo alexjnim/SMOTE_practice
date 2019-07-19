@@ -141,8 +141,6 @@ X_train.columns
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
 
-#y_pretest_pred = cross_val_predict(best_model, X_pretest, y_pretest, cv=3)
-
 y_train_pred = best_model.predict(X_train)
 
 y_train_pred = y_train_pred.round()
