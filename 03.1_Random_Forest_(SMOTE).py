@@ -128,6 +128,7 @@ def confusion_matrices(y, y_pred):
     print('the precision score is : ', precision_score(y, y_pred))
     print('the recall score is : ', recall_score(y, y_pred))
     print('the f1 score is : ', f1_score(y, y_pred))
+    print('the accuracy score is : ', accuracy_score(y, y_pred))
     
     return
 
@@ -210,7 +211,7 @@ smt = SMOTE()
 def KFold_SMOTE_model_scores(X_df, y, model):
     
     scores = []
-    cv = KFold(n_splits=5, random_state=42, shuffle=True)
+    cv = KFold(n_splits=5, random_state=42, shuffle=False)
     
     # need to reset the indices as the 
     X_df = X_df.reset_index(drop=True)
