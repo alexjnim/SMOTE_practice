@@ -55,9 +55,12 @@ X_train.shape
 
 y_train.value_counts()
 
+# # Let's try simply RandomForest first, no cross validation
+
 # +
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 forest_clf = RandomForestClassifier(n_estimators=10, random_state=42)
 forest_clf.fit(X_train, y_train)
@@ -66,41 +69,18 @@ y_train_pred = forest_clf.predict(X_train)
 #y_pretest_pred = forest_clf.predict(X_pretest)
 
 score = accuracy_score(y_train, y_train_pred)
+recall_score = recall_score(y_train, y_train_pred)
+precision_score = precision_score(y_train, y_train_pred)
 
 print('accuracy: {}'.format(score))
+print('recall: {}'.format(recall_score))
+print('precision: {}'.format(precision_score))
 # -
 
-# 97% ?? surely not, it must have overfitted. let's check with cross val
+# # 97% accuracy?? surely not, it must have overfitted. let's check with cross val
 
 print('Pays off loans:', round(y_train.value_counts()[0]/len(y_train) * 100,2), '% of the dataset')
 print('Does not pay off loans:', round(y_train.value_counts()[1]/len(y_train) * 100,2), '% of the dataset')
-
-# # let's do this with Cross Validation to check the actual accuracy as it can test this against the validation set
-
-# +
-from sklearn.model_selection import cross_val_score
-
-def display_scores(scores):
-    print("Scores:", scores)
-    print("Mean:", scores.mean())
-    print("Standard deviation:", scores.std())
-    
-
-
-# +
-# %%capture
-
-forest_scores = cross_val_score(forest_clf, X_train, y_train,
-                                scoring="accuracy", cv=10)
-
-
-
-
-# -
-
-display_scores(forest_scores)
-
-# # 78%? This is more like it, but I suspect that it has simply predicted everything to be 0 = Fully Paid
 
 # +
 from sklearn.model_selection import cross_val_predict
@@ -133,6 +113,45 @@ def confusion_matrices(y, y_pred):
     return
 
 
+# -
+
+confusion_matrices(y_train, y_train_pred)
+
+# # probably overfitted, just memorised the answers to each data point! let's confirm this with pretest set
+
+# +
+y_pretest_pred = forest_clf.predict(X_pretest)
+
+confusion_matrices(y_pretest, y_pretest_pred)
+# -
+
+# # as I thought, it simply predicted that all points are 0 = fully paid
+
+# # let's further confrim this with Cross Validation to check this against the validation set
+
+# +
+from sklearn.model_selection import cross_val_score
+
+def display_scores(scores, name):
+    print("{} Scores: {}".format(name,scores))
+    print("{} Mean: {}".format(name,scores.mean()))
+    print("{} Standard deviation: {}".format(name,scores.std()))
+    print("\n")
+    
+
+
+# +
+score = ['accuracy', 'precision', 'recall']
+
+
+for i in score:
+    forest_scores = cross_val_score(forest_clf, X_train, y_train,
+                                scoring=i, cv=10)
+    display_scores(forest_scores, i)
+# -
+
+# # 78%? This is more like it, but I suspect that it has simply predicted everything to be 0 = Fully Paid
+
 # +
 from sklearn.model_selection import cross_val_predict
 
@@ -143,7 +162,7 @@ confusion_matrices(y_train, y_train_pred)
 
 # # exactly as I suspected! 
 
-# # let's try GridSearch to find optimal setting for random forest, maybe that'll help
+# # let's try GridSearch just to find the optimal hyper parameters, probably won't make the results any better though. let's score this based on 'recall' and select the best model based on the recall score
 
 # +
 from sklearn.model_selection import GridSearchCV
@@ -156,7 +175,7 @@ param_grid = [
 forest_clf = RandomForestClassifier(random_state=42)
 
 grid_search = GridSearchCV(forest_clf, param_grid, cv=5,
-                           scoring='accuracy', return_train_score=True)
+                           scoring='recall', return_train_score=True)
 
 
 grid_search.fit(X_train, y_train)
@@ -175,7 +194,7 @@ best_model = grid_search.best_estimator_
 feature_importances = grid_search.best_estimator_.feature_importances_ 
 feature_importances
 
-# # here we can decide which features are important or not, and therefore drop them! 
+# # here we can decide which features are important or not, and therefore drop them! but let's do this later
 
 X_train.columns
 
@@ -249,10 +268,10 @@ def KFold_SMOTE_model_scores(X_df, y, model):
         
         #find the accuracy score of the validation set
         y_val_pred = model.predict(X_val)
-        scores.append(accuracy_score(y_val, y_val_pred))
+        scores.append(recall_score(y_val, y_val_pred))
         
         #find the best model based on the accuracy score
-        if accuracy_score(y_val, y_val_pred) == max(scores):
+        if recall_score(y_val, y_val_pred) == max(scores):
             best_model = model
     
     return scores, best_model
@@ -266,9 +285,11 @@ scores, best_model = KFold_SMOTE_model_scores(X_train, y_train, forest_clf)
 # -
 
 scores = np.array(scores)
-display_scores(scores)
+display_scores(scores, 'recall')
 
-# # this time, 0 and 1 are 50/50 from SMOTE. so predicting that everything is 0 or 1 will give an accuracy of 50. surely accuracy score of 75 is a much better sign?
+# # the mean recall on validation set during cross val is 0.2. this isn't promising for pretest data
+#
+# # this time, 0 and 1 are 50/50 from SMOTE. so predicting that everything is 0 or 1 will give an accuracy of 50. 
 
 # # let's check this quickly on training data -> and then look at this for test data
 
@@ -278,7 +299,7 @@ y_train_pred = best_model.predict(X_train)
 confusion_matrices(y_train, y_train_pred)
 # -
 
-# # it does really well on training data! let's hope it hasn't simply overfitted. Let's look at pretest set 
+# # it does really well on training data! it has most likely overfitted. Let's look at pretest set 
 
 # +
 y_pretest_pred = best_model.predict(X_pretest)

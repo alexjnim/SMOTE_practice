@@ -52,16 +52,23 @@ X_pretest = X_pretest.drop('Unnamed: 0', axis=1)
 # +
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score, recall_score, f1_score
 
-
-tree_clf = DecisionTreeClassifier(max_depth=3, random_state=42)
+tree_clf = DecisionTreeClassifier()
 tree_clf.fit(X_train, y_train)
 
 y_train_pred = tree_clf.predict(X_train)
 
 score = accuracy_score(y_train, y_train_pred)
+recall_score = recall_score(y_train, y_train_pred)
+precision_score = precision_score(y_train, y_train_pred)
 
 print('accuracy: {}'.format(score))
+print('recall: {}'.format(recall_score))
+print('precision: {}'.format(precision_score))
+# -
+
+# # 100 accurate. must have memorised the answers
 
 # +
 from sklearn.model_selection import cross_val_score
@@ -73,7 +80,7 @@ def display_scores(scores):
 
 
 tree_clf_scores = cross_val_score(tree_clf, X_train, y_train,
-                                scoring="accuracy", cv=10)
+                                scoring="recall", cv=10)
 
 display_scores(tree_clf_scores)
 
@@ -117,7 +124,7 @@ y_train_pred = cross_val_predict(tree_clf, X_train, y_train, cv=10)
 confusion_matrices(y_train, y_train_pred)
 # -
 
-# # terrible!
+# # this is still pretty terrible!
 
 # +
 from sklearn.model_selection import KFold
@@ -166,10 +173,10 @@ def KFold_SMOTE_model_scores(X_df, y, model):
         
         #find the accuracy score of the validation set
         y_val_pred = model.predict(X_val)
-        scores.append(accuracy_score(y_val, y_val_pred))
+        scores.append(recall_score(y_val, y_val_pred))
         
         #find the best model based on the accuracy score
-        if accuracy_score(y_val, y_val_pred) == max(scores):
+        if recall_score(y_val, y_val_pred) == max(scores):
             best_model = model
     
     return scores, best_model
@@ -183,6 +190,14 @@ y_train_pred = best_model.predict(X_train)
 confusion_matrices(y_train, y_train_pred)
 # -
 
-# # terrible
+# # pretty good on training data
+
+# +
+y_pretest_pred = best_model.predict(X_pretest)
+
+confusion_matrices(y_pretest, y_pretest_pred)
+# -
+
+# # terrible on pretest data
 
 
