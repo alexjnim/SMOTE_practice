@@ -150,7 +150,7 @@ for i in score:
     display_scores(forest_scores, i)
 # -
 
-# # 78%? This is more like it, but I suspect that it has simply predicted everything to be 0 = Fully Paid
+# # 74%? This is more like it, but I suspect that it has simply predicted everything to be 0 = Fully Paid, evidently seen by a recall of 0.08 
 
 # +
 from sklearn.model_selection import cross_val_predict
@@ -214,10 +214,6 @@ confusion_matrices(y_pretest, y_pretest_pred)
 # -
 
 # # basically predicted most Loan Status to be 0 (Fully Paid). This is terrible 
-
-from sklearn.metrics import accuracy_score
-print(accuracy_score(y_pretest, y_pretest_pred))
-
 
 # # these scores are terrible! - let's try this with SMOTE
 
@@ -308,8 +304,5 @@ confusion_matrices(y_pretest, y_pretest_pred)
 # -
 
 # # better with SMOTE, but still not that great! it's just predicting that y = 0 (fully paid) for everything
-
-from sklearn.metrics import accuracy_score
-print(accuracy_score(y_pretest, y_pretest_pred))
 
 

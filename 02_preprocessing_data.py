@@ -41,10 +41,48 @@ import pandas as pd
 pd.set_option('display.max_rows', 30)
 
 df = pd.read_csv("credit_train.csv")
+
+
 # -
 
+def missing_values_table(df):
+        # Total missing values
+        mis_val = df.isnull().sum()
+        
+        # Percentage of missing values
+        mis_val_percent = 100 * df.isnull().sum() / len(df)
+        
+        # Make a table with the results
+        mis_val_table = pd.concat([mis_val, mis_val_percent], axis=1)
+        
+        # Rename the columns
+        mis_val_table_ren_columns = mis_val_table.rename(
+        columns = {0 : 'Missing Values', 1 : '% of Total Values'})
+        
+        # Sort the table by percentage of missing descending
+        mis_val_table_ren_columns = mis_val_table_ren_columns[
+            mis_val_table_ren_columns.iloc[:,1] != 0].sort_values(
+        '% of Total Values', ascending=False).round(1)
+        
+        # Print some summary information
+        print ("Your selected dataframe has " + str(df.shape[1]) + " columns.\n"      
+            "There are " + str(mis_val_table_ren_columns.shape[0]) +
+              " columns that have missing values.")
+        
+        # Return the dataframe with missing information
+        return mis_val_table_ren_columns
+
+
+missing_values_table(df)
+
+# +
 df = df.drop('Loan ID', axis =1)
 df = df.drop('Customer ID', axis=1)
+
+#remember that "Months since last delinquent" had more than 50% missing, so let's drop this column too
+
+df = df.drop('Months since last delinquent', axis=1)
+# -
 
 df.isnull().sum()
 
@@ -74,9 +112,10 @@ nonan_df.isnull().sum()
 # +
 from sklearn.model_selection import train_test_split
 
-# here we make a X_pretest set that has 4/10 of the rows that have nan
+# here we make a X_pretest set that has 2/10 of the rows that don't have nan values. that is 2/10 * 77271 = 15450, 
+# so 15% of the training dataset
 
-X_pretest, remaining_nonan = train_test_split(nonan_df, train_size= 0.4, random_state = 42)
+X_pretest, remaining_nonan = train_test_split(nonan_df, train_size= 0.2, random_state = 42)
 # -
 
 X_pretest.shape
@@ -98,8 +137,12 @@ print_totshape(df, X_pretest)
 
 df.isnull().sum()
 
+df.shape
 
-# # Okay, let's fill in the nans for Credit Score, Annual Income, Years in current job, Months since last delinquent, Bankruptcies and Tax Liens
+# # Okay, let's fill in the nans for Credit Score, Annual Income, Years in current job, Bankruptcies and Tax Liens
+
+missing_values_table(df)
+
 
 # +
 def fill_mode(df, attribute_list):
@@ -126,8 +169,8 @@ def fill_median(df, attribute_list):
 df.head()
 
 # +
-fill_mode(df, ['Credit Score', 'Annual Income', 'Years in current job', 'Tax Liens'])
-fill_mean(df, ['Months since last delinquent'])
+fill_mode(df, ['Years in current job', 'Tax Liens'])
+fill_mean(df, ['Annual Income', 'Credit Score'])
 fill_median(df, ['Maximum Open Credit'])
 
 df['Bankruptcies'].fillna(1.0, inplace=True)
@@ -143,7 +186,7 @@ def print_mmm(df, attrib):
     print('the min: {}',format(df[attrib].min()))
 
 
-df.isnull().sum()
+missing_values_table(df)
 
 # # Great, filled all the nan values! - now let's remove the possible outliers
 #
@@ -428,7 +471,7 @@ def corr_matrix(df, attribute_list, key_attribute):
 # -
 
 list_attribs = ['Loan Status', "Current Loan Amount", "Annual Income", "Monthly Debt",
-                 'Years of Credit History', 'Months since last delinquent',
+                 'Years of Credit History',
                  'Number of Open Accounts', 'Number of Credit Problems',
                  'Current Credit Balance', 'Maximum Open Credit',
                  'Bankruptcies', 'Tax Liens']
@@ -478,7 +521,7 @@ class selector(BaseEstimator, TransformerMixin):
         return X[self.attribute_names].values
       
 num_attributes = ["Current Loan Amount", "Annual Income", "Monthly Debt",
-                 'Years of Credit History', 'Months since last delinquent',
+                 'Years of Credit History',
                  'Number of Open Accounts', 'Number of Credit Problems',
                  'Current Credit Balance', 'Maximum Open Credit',
                  'Bankruptcies', 'Tax Liens']
