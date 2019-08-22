@@ -31,6 +31,8 @@ X_pretest = X_pretest.drop('Unnamed: 0', axis=1)
 
 X_train.shape
 
+# # T-SNE plot 
+
 # +
 import matplotlib
 import matplotlib.pyplot as plt
@@ -46,6 +48,8 @@ colors = ['red', 'green']
 
 plt.scatter(k[:, 0], k[:, 1], c=y_train[:500], zorder=10, s=2, cmap=matplotlib.colors.ListedColormap(colors))
 # -
+
+# # PCA plot
 
 from sklearn.decomposition import PCA 
 pca = PCA(n_components = 2)
