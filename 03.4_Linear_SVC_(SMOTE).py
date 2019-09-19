@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.4'
-#       jupytext_version: 1.1.7
+#       jupytext_version: 1.2.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -40,11 +40,11 @@ import pandas as pd
 
 X_train = pd.read_csv("X_train_processed.csv")
 
-y_train = pd.Series.from_csv('y_train.csv')
+y_train = pd.read_csv('y_train.csv', header = None, index_col = 0, squeeze = bool)
 
 X_pretest = pd.read_csv("X_pretest_processed.csv")
 
-y_pretest = pd.Series.from_csv('y_pretest.csv')
+y_pretest = pd.read_csv('y_pretest.csv', header = None, index_col = 0, squeeze = bool)
 # -
 
 # # let's try using a simple support vector machine. linear SVM will obviously give bad results due to linear fit. but let's check anyway
@@ -62,8 +62,8 @@ y_train_pred = linear.predict(X_train)
 score = accuracy_score(y_train, y_train_pred.round())
 
 print('accuracy: {}'.format(score))
+# -
 
-# +
 print('Pays off loans:', round(y_train.value_counts()[0]/len(y_train) * 100,2), '% of the dataset')
 print('Does not pay off loans:', round(y_train.value_counts()[1]/len(y_train) * 100,2), '% of the dataset')
 

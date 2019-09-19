@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.4'
-#       jupytext_version: 1.1.7
+#       jupytext_version: 1.2.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -39,12 +39,16 @@ import pandas as pd
 
 X_train = pd.read_csv("X_train_processed.csv")
 
-y_train = pd.Series.from_csv('y_train.csv')
+y_train = pd.read_csv('y_train.csv', header = None, index_col = 0, squeeze = bool)
 
 X_pretest = pd.read_csv("X_pretest_processed.csv")
 
-y_pretest = pd.Series.from_csv('y_pretest.csv')
+y_pretest = pd.read_csv('y_pretest.csv', header = None, index_col = 0, squeeze = bool)
 # -
+
+y_train
+
+type(y_train)
 
 X_train = X_train.drop('Unnamed: 0', axis=1)
 X_pretest = X_pretest.drop('Unnamed: 0', axis=1)
@@ -53,7 +57,15 @@ X_pretest.shape
 
 X_train.shape
 
+X_train.head()
+
+y_train.head()
+
 y_train.value_counts()
+
+len(y_train)
+
+X_train.shape[1]
 
 # # First let's try neural networks without any changes first 
 
